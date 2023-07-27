@@ -1,6 +1,8 @@
 import express, {NextFunction, Request, Response} from "express";
 import http from "http";
 import {Server} from 'socket.io'
+import {JoinRoomProps} from "lib";
+import Room from "./Room";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -11,6 +13,7 @@ const io = new Server(httpServer, {
     },
     path: '/chat'
 });
+const rooms = new Map<string, Room>()
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {    // Default error status and message
     console.error(err);
@@ -21,9 +24,15 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
+     socket.on('join', (props: JoinRoomProps) => {
+        const {roomId, username} = props
+        const room = rooms.get(roomId);
+        const user = {socket, username};
+        if (room && room.isOpen) {
+            room.joinRoom(user)
+        } else {
+            rooms.set(props.roomId, new Room(io, user, roomId))
+        }
     });
 });
 

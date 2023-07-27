@@ -1,14 +1,18 @@
 <template>
-  <div class="flex flex-col">
-    <ConnectionState/>
-    <ConnectionManager/>
+  <div class="flex w-full h-full items-center justify-center">
+    <RouterView/>
   </div>
 </template>
 
 <script setup lang="ts">
-import ConnectionManager from "@/components/ConnectionManager.vue";
-import ConnectionState from "@/components/ConnectionState.vue";
-</script>
+import {RouterView} from 'vue-router'
+import {useChatStore} from "@/stores/chat";
+import {onMounted} from "vue";
 
-<style scoped>
-</style>
+const chatStore = useChatStore()
+const {connect} = chatStore
+
+onMounted(() => {
+  connect()
+})
+</script>
