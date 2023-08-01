@@ -28,10 +28,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set Image Tag
+        run: |
+          if [ "$GITHUB_REF" = "master" ]; then
+            echo "BRANCH_NAME=latest" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          fi
+
       - name: Build and Push Docker Image
         env:
-          IMAGE_NAME: michaelfrancisco/chat_server
           DOCKER_BUILDKIT: 1
         run: |
-          docker build -t $IMAGE_NAME:$GITHUB_REF_NAME -f packages/server/Dockerfile .
-          docker push $IMAGE_NAME:$GITHUB_REF_NAME
+          IMAGE_NAME=michaelfrancisco/chat_server:$BRANCH_NAME
+          docker build -t $IMAGE_NAME -f packages/server/Dockerfile .
+          docker push $IMAGE_NAME
