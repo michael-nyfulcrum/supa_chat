@@ -2,8 +2,9 @@ version: '3'
 services:
   server:
     container_name: chat_server
-    build:
-      context: ./packages/server
-      dockerfile: Dockerfile
+    image: michaelfrancisco/chat_server:local
+    environment:
+      - CLIENT_URL=http://localhost:5173
+#    entrypoint: "tail -f /dev/null"
     ports:
       - "3000:3000"

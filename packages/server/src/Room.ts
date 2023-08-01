@@ -1,5 +1,5 @@
 import {Server, Socket} from "socket.io";
-import {ChatMessage, JoinedProps} from "lib";
+import {ChatMessage, JoinedProps} from "common";
 
 export type User = { socket: Socket, username: string };
 

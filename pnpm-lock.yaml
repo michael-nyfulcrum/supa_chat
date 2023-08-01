@@ -10,9 +10,9 @@ importers:
 
   packages/client:
     dependencies:
-      lib:
+      common:
         specifier: workspace:*
-        version: link:../lib
+        version: link:../common
       pinia:
         specifier: ^2.1.6
         version: 2.1.6(typescript@5.1.6)(vue@3.3.4)
@@ -66,7 +66,7 @@ importers:
         specifier: ^1.8.6
         version: 1.8.6(typescript@5.1.6)
 
-  packages/lib:
+  packages/common:
     dependencies:
       typescript:
         specifier: ^5.1.6
@@ -74,12 +74,15 @@ importers:
 
   packages/server:
     dependencies:
+      common:
+        specifier: workspace:*
+        version: link:../common
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.3.1
       express:
         specifier: ^4.18.2
         version: 4.18.2
-      lib:
-        specifier: workspace:*
-        version: link:../lib
       socket.io:
         specifier: ^4.7.1
         version: 4.7.1
@@ -93,12 +96,6 @@ importers:
       '@types/express':
         specifier: ^4.17.17
         version: 4.17.17
-      '@types/uuid':
-        specifier: ^9.0.2
-        version: 9.0.2
-      uuid:
-        specifier: ^9.0.0
-        version: 9.0.0
 
 packages:
 
@@ -688,10 +685,6 @@ packages:
       '@types/node': 18.17.1
     dev: true
 
-  /@types/uuid@9.0.2:
-    resolution: {integrity: sha512-kNnC1GFBLuhImSnV7w4njQkUiJi0ZXUycu1rUaouPqiKlXkh77JKgdRnTAp1x5eBwcIwbtI+3otwzuIDEuDoxQ==}
-    dev: true
-
   /@vitejs/plugin-vue@4.2.3(vite@4.4.6)(vue@3.3.4):
     resolution: {integrity: sha512-R6JDUfiZbJA9cMiguQ7jxALsgiprjBeHL5ikpXfJCH62pPHtI+JdJ5xWj6Ev73yXSlYl86+blXn1kZHQ7uElxw==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -1143,6 +1136,11 @@ packages:
   /dlv@1.1.3:
     resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
     dev: true
+
+  /dotenv@16.3.1:
+    resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
+    engines: {node: '>=12'}
+    dev: false
 
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -2653,11 +2651,6 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
     dev: false
-
-  /uuid@9.0.0:
-    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
-    hasBin: true
-    dev: true
 
   /validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}

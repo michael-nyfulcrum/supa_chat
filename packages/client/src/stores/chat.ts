@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {computed, ref} from "vue";
 import {io} from "socket.io-client";
-import {type ChatMessage, type JoinedProps, type JoinRoomProps} from "lib";
+import {type ChatMessage, type JoinedProps, type JoinRoomProps} from "common";
 
 export const useChatStore = defineStore('socket', () => {
     const url = import.meta.env.VITE_SERVER_URL;
