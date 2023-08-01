@@ -1,7 +1,7 @@
 import express, {NextFunction, Request, Response} from "express";
 import http from "http";
 import {Server} from 'socket.io'
-import {JoinRoomProps} from "../../common";
+import {JoinRoomProps} from "common";
 import Room from "./Room";
 import dotenv from 'dotenv'
 
@@ -31,13 +31,12 @@ app.get('/', (req: Request, res: Response) => {
 
 io.on('connection', (socket) => {
     socket.on('join', (props: JoinRoomProps) => {
-        const {roomId, username} = props
+        const {user, roomId} = props
         const room = rooms.get(roomId);
-        const user = {socket, username};
         if (room && room.isOpen) {
-            room.joinRoom(user)
+            room.joinRoom(user, socket)
         } else {
-            rooms.set(props.roomId, new Room(io, user, roomId))
+            rooms.set(props.roomId, new Room(io, user, socket, roomId))
         }
     });
 });
