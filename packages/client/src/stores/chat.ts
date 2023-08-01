@@ -1,15 +1,17 @@
 import {defineStore} from 'pinia'
 import {computed, ref} from "vue";
 import {io} from "socket.io-client";
-import {type ChatMessage, type JoinedProps, type JoinRoomProps} from "common";
+import {type ChatMessage, type JoinedProps, type JoinRoomProps, type User} from "common";
 
+// Open issue regarding inferred types
+// https://github.com/microsoft/TypeScript/issues/47663
 export const useChatStore = defineStore('socket', () => {
     const url = import.meta.env.VITE_SERVER_URL;
     const socket = ref(io(url, {autoConnect: false, path: '/chat'}));
     const connected = computed(() => socket.value.connected)
     
-    const messages = ref([] as ChatMessage[])
-    const users = ref([] as string[])
+    const messages = ref([] as Array<ChatMessage>)
+    const users = ref([] as Array<User>)
 
     function connect() {
         if (socket.value.disconnected) socket.value.connect()
@@ -19,14 +21,14 @@ export const useChatStore = defineStore('socket', () => {
         socket.value.disconnect()
     }
 
-    function sendMessage(msg: ChatMessage) {
+    function sendMessage(msg: string) {
         socket.value.emit('message', msg)
     }
 
-    function join(username: string, roomId: string) {
+    function join(username: string, avatar: string, roomId: string) {
         messages.value = []
         users.value = []
-        socket.value.emit('join', {username, roomId} as JoinRoomProps)
+        socket.value.emit('join', {username, roomId, avatar} as JoinRoomProps)
     }
 
     socket.value.on("connect", () => {
@@ -34,6 +36,7 @@ export const useChatStore = defineStore('socket', () => {
     });
 
     socket.value.on("message", (msg: ChatMessage) => {
+        console.log({msg})
         messages.value.push(msg)
     });
     

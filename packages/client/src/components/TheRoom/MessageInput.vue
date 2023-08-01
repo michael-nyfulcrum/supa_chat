@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import {useChatStore} from "@/stores/chat";
-import {ref, computed} from "vue";
+import {computed, ref} from "vue";
 import {storeToRefs} from "pinia";
 
 const chatStore = useChatStore()
@@ -18,13 +18,9 @@ const message = ref('')
 const username = computed(() => window.localStorage.getItem('username') ?? '🤡')
 
 function send() {
-  if (message.value.trim() == '') return
-  sendMessage({
-    timestamp: Date.now(),
-    username: username.value,
-    socketId: socket.value.id,
-    content: message.value.trim()
-  })
+  const msg = message.value.trim();
+  if (msg == '') return
+  sendMessage(msg)
   message.value = ''
 }
 </script>

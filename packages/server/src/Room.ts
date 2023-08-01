@@ -1,41 +1,52 @@
 import {Server, Socket} from "socket.io";
-import {ChatMessage, JoinedProps} from "common";
-
-export type User = { socket: Socket, username: string };
+import {ChatMessage, JoinedProps, User} from "common";
 
 
 class Room {
-    id: string
+    roomId: string
     io: Server;
     messages: Array<ChatMessage> = []
     users: Map<string, User> = new Map()
     isOpen: boolean = true
 
-    constructor(io: Server, user: User, id: string) {
-        console.debug(`[${id}] ${user.username} creating room`)
-        this.id = id
+    constructor(io: Server, username: string, avatar: string, userSocket: Socket, roomId: string) {
+        console.debug(`[${roomId}] ${avatar} ${username} creating room`)
+        this.roomId = roomId
         this.io = io
-        this.users.set(user.socket.id, user)
-        user.socket.join(id)
-        this.setupListeners(user.socket)
+        this.users.set(userSocket.id, {username, avatar})
+        userSocket.join(roomId)
+        this.setupListeners(userSocket)
     }
 
-    joinRoom(user: User) {
-        console.debug(`[${this.id}] ${user.username} joining`)
-        this.users.set(user.socket.id, user)
-        user.socket.join(this.id)
-        user.socket.emit('joined', {
+    joinRoom(username: string, avatar: string, socket: Socket) {
+        console.debug(`[${this.roomId}] ${avatar} ${username} joining`)
+        this.users.set(socket.id, {username, avatar})
+        socket.join(this.roomId)
+        socket.emit('joined', {
             messages: this.messages,
-            users: Array.from(this.users.values()).map((user) => user.username)
+            users: Array.from(this.users.values()).map((user) => {
+                return {
+                    username: user.username,
+                    avatar: user.avatar
+                }
+            })
         } as JoinedProps)
-        this.setupListeners(user.socket)
+        this.setupListeners(socket)
     }
 
     setupListeners(socket: Socket) {
-        socket.on('message', (msg: ChatMessage) => {
-            console.debug(`[${this.id}] ${msg.username}: ${msg.content}`)
-            this.messages.push(msg)
-            this.io.to(this.id).emit("message", msg)
+        socket.on('message', (msg: string) => {
+            const user = this.users.get(socket.id) as User
+            if (!user) return
+            console.debug(`[${this.roomId}] ${user?.avatar} ${user.username}: ${msg}`)
+            let chatMessage = {
+                user,
+                socketId: socket.id,
+                content: msg,
+                timestamp: Date.now()
+            };
+            this.messages.push(chatMessage)
+            this.io.to(this.roomId).emit("message", chatMessage)
         });
 
         socket.on('disconnect', () => {
@@ -49,49 +60,3 @@ class Room {
 }
 
 export default Room
-
-
-const dummyMessages = [
-    {
-        id: "1",
-        username: "John",
-        socketId: "John",
-        content: "Hey there!",
-        timestamp: 1679938800,
-    },
-    {
-        id: "2",
-        username: "Alice",
-        socketId: "Alice",
-        content: "Hi John! How are you?",
-        timestamp: 1679939100,
-    },
-    {
-        id: "3",
-        username: "John",
-        socketId: "John",
-        content: "I'm doing great, thanks!",
-        timestamp: 1679939400,
-    },
-    {
-        id: "4",
-        username: "Alice",
-        socketId: "Alice",
-        content: "That's good to hear!",
-        timestamp: 1679939700,
-    },
-    {
-        id: "5",
-        username: "John",
-        socketId: "John",
-        content: "How about you?",
-        timestamp: 1679940000,
-    },
-    {
-        id: "6",
-        username: "Alice",
-        socketId: "Alice",
-        content: "I'm doing well too, thanks!",
-        timestamp: 1679940300,
-    },
-];

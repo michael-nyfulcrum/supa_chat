@@ -5,17 +5,17 @@
            :class="{
             'mt-6': index > 0 && messages[index - 1].socketId != message.socketId,
             'mt-0.5': index > 0 && messages[index - 1].socketId == message.socketId,
-            'flex-row-reverse': socket.id == message.socketId
+            'flex-row-reverse': socket.id == message.socketId,
            }">
         <Avatar 
             v-if="index === messages.length - 1 || messages[index + 1].socketId != message.socketId"
             class="self-end" 
-            shape="circle">🐶</Avatar>
+            shape="circle">{{message.user.avatar}}</Avatar>
         <Avatar v-else class="self-end invisible" shape="circle"></Avatar>
         <div class="flex flex-col gap-1">
           <p v-if="messages[index - 1]?.socketId != message.socketId" class="text-[0.7em] text-gray-500 ml-2">
-            {{ message.username }}</p>
-          <div class="bg-gray-300 rounded-xl p-2 text-sm">{{ message.content }}</div>
+            {{ message.user.username }}</p>
+          <p class="bg-gray-300 rounded-xl p-2 text-sm max-w-[20em] break-words">{{ message.content }}</p>
         </div>
       </div>
     </div>
