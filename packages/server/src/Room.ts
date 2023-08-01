@@ -9,28 +9,24 @@ class Room {
     users: Map<string, User> = new Map()
     isOpen: boolean = true
 
-    constructor(io: Server, username: string, avatar: string, userSocket: Socket, roomId: string) {
-        console.debug(`[${roomId}] ${avatar} ${username} creating room`)
+    constructor(io: Server, user: User, userSocket: Socket, roomId: string) {
+        console.debug(`[${roomId}] ${user.avatar} ${user.username} creating room`)
         this.roomId = roomId
         this.io = io
-        this.users.set(userSocket.id, {username, avatar})
+        this.users.set(userSocket.id, user)
         userSocket.join(roomId)
         this.setupListeners(userSocket)
     }
 
-    joinRoom(username: string, avatar: string, socket: Socket) {
-        console.debug(`[${this.roomId}] ${avatar} ${username} joining`)
-        this.users.set(socket.id, {username, avatar})
+    joinRoom(user: User, socket: Socket) {
+        console.debug(`[${this.roomId}] ${user.avatar} ${user.username} joining`)
+        this.users.set(socket.id, user)
         socket.join(this.roomId)
         socket.emit('joined', {
             messages: this.messages,
-            users: Array.from(this.users.values()).map((user) => {
-                return {
-                    username: user.username,
-                    avatar: user.avatar
-                }
-            })
+            users: Array.from(this.users.values())
         } as JoinedProps)
+        socket.to(this.roomId).emit("userJoined", user)
         this.setupListeners(socket)
     }
 
@@ -49,13 +45,26 @@ class Room {
             this.io.to(this.roomId).emit("message", chatMessage)
         });
 
-        socket.on('disconnect', () => {
-            this.users.delete(socket.id)
-            if (this.users.size == 0) {
-                this.isOpen = false
-            }
+        socket.on('leave', () => {
+            this.removeUser(socket);
+
         });
 
+        socket.on('disconnect', () => {
+            this.removeUser(socket);
+        });
+
+    }
+
+    private removeUser(socket: Socket) {
+        const user = this.users.get(socket.id) as User
+        if (user) {
+            this.io.to(this.roomId).emit("userLeft", user.uuid)
+            this.users.delete(socket.id)
+        }
+        if (this.users.size == 0) {
+            this.isOpen = false
+        }
     }
 }
 

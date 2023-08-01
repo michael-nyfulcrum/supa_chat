@@ -1,9 +1,9 @@
 <template>
   <main>
-    <TheLobby />
+    <TheLobby/>
   </main>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import TheLobby from "@/components/TheLobby.vue";
 </script>

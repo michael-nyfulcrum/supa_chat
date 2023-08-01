@@ -9,7 +9,7 @@ export const useChatStore = defineStore('socket', () => {
     const url = import.meta.env.VITE_SERVER_URL;
     const socket = ref(io(url, {autoConnect: false, path: '/chat'}));
     const connected = computed(() => socket.value.connected)
-    
+
     const messages = ref([] as Array<ChatMessage>)
     const users = ref([] as Array<User>)
 
@@ -25,28 +25,44 @@ export const useChatStore = defineStore('socket', () => {
         socket.value.emit('message', msg)
     }
 
-    function join(username: string, avatar: string, roomId: string) {
+    function join(username: string, avatar: string, uuid: string, roomId: string) {
         messages.value = []
-        users.value = []
-        socket.value.emit('join', {username, roomId, avatar} as JoinRoomProps)
+        const user: User = {
+            avatar,
+            uuid,
+            username,
+            socketId: socket.value.id
+        }
+        users.value = [user]
+        socket.value.emit('join', {user, roomId} as JoinRoomProps)
+    }
+
+    function leave() {
+        socket.value.emit('leave')
     }
 
     socket.value.on("connect", () => {
-        console.log('connected')
     });
 
     socket.value.on("message", (msg: ChatMessage) => {
-        console.log({msg})
         messages.value.push(msg)
     });
-    
+
     socket.value.on("joined", (props: JoinedProps) => {
         messages.value = props.messages
         users.value = props.users
     });
 
+    socket.value.on("userJoined", (user: User) => {
+        console.log('userJoined', user)
+        users.value.push(user)
+    });
+
+    socket.value.on("userLeft", (uuid: string) => {
+        users.value = users.value.filter(user => user.uuid != uuid)
+    });
+
     socket.value.on("disconnect", () => {
-        console.log('disconnected')
     });
 
     return {
@@ -56,6 +72,7 @@ export const useChatStore = defineStore('socket', () => {
         disconnect,
         sendMessage,
         join,
+        leave,
         messages,
         users
     }

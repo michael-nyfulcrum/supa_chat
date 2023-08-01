@@ -1,11 +1,11 @@
 <template>
   <div class="p-inputgroup flex-1">
-    <InputText @keyup.enter="send()" v-model="message"/>
-    <Button @click="send()" icon="pi pi-send"/>
+    <InputText v-model="message" @keyup.enter="send()"/>
+    <Button icon="pi pi-send" @click="send()"/>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {useChatStore} from "@/stores/chat";
 import {computed, ref} from "vue";
 import {storeToRefs} from "pinia";

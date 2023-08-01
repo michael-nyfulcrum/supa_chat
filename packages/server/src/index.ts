@@ -31,12 +31,12 @@ app.get('/', (req: Request, res: Response) => {
 
 io.on('connection', (socket) => {
     socket.on('join', (props: JoinRoomProps) => {
-        const {roomId, username, avatar} = props
+        const {user, roomId} = props
         const room = rooms.get(roomId);
         if (room && room.isOpen) {
-            room.joinRoom(username, avatar, socket)
+            room.joinRoom(user, socket)
         } else {
-            rooms.set(props.roomId, new Room(io, username, avatar, socket, roomId))
+            rooms.set(props.roomId, new Room(io, user, socket, roomId))
         }
     });
 });

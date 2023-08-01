@@ -1,9 +1,9 @@
 <template>
   <main>
-    <TheRoom />
+    <TheRoom/>
   </main>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import TheRoom from "@/components/TheRoom/TheRoom.vue";
 </script>
