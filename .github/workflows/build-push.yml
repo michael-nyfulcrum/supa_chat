@@ -30,7 +30,7 @@ jobs:
 
       - name: Set Image Tag
         run: |
-          if [ "$GITHUB_REF" = "master" ]; then
+          if [ "$GITHUB_REF_NAME" = "master" ]; then
             echo "BRANCH_NAME=latest" >> $GITHUB_ENV
           else
             echo "BRANCH_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
