@@ -5,7 +5,8 @@
 
       <div class="p-inputgroup flex-1">
         <InputText v-model="email" placeholder="Email" @keyup.enter="handleLogin()"/>
-        <Button @click="handleLogin()">Send magic link</Button>
+        <Button v-if="loading" @click="handleLogin()">Send magic link</Button>
+        <Button v-else disabled>Send magic link</Button>
       </div>
   </form>
 </template>

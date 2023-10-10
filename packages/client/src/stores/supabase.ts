@@ -14,6 +14,7 @@ export const useSupabaseStore = defineStore('supabase', () => {
     const user = ref<null | DatabaseUser>(null)
 
     async function signIn(email: string) {
+      if (loading.value) return
       loading.value = true
       try {
         const { error } = await supabase.auth.signInWithOtp({ email, })
