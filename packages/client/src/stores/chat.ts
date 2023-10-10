@@ -1,79 +1,98 @@
-import {defineStore} from 'pinia'
-import {computed, ref} from "vue";
-import {io} from "socket.io-client";
-import {type ChatMessage, type JoinedProps, type JoinRoomProps, type User} from "common";
+import { defineStore, storeToRefs } from 'pinia'
+import { ref } from "vue";
+import { type ChatMessage, type User } from "common";
+import { useSupabaseStore } from "@/stores/supabase";
+import { supabase } from "@/lib/supabaseClient";
 
-// Open issue regarding inferred types
-// https://github.com/microsoft/TypeScript/issues/47663
 export const useChatStore = defineStore('socket', () => {
-    const url = import.meta.env.VITE_SERVER_URL;
-    const socket = ref(io(url, {autoConnect: false, path: '/chat'}));
-    const connected = computed(() => socket.value.connected)
+  const supabaseStore = useSupabaseStore()
+  const { user } = storeToRefs(supabaseStore)
 
-    const messages = ref([] as Array<ChatMessage>)
-    const users = ref([] as Array<User>)
+  const messages = ref([] as Array<ChatMessage>)
+  const roomId = ref<string | null>(null)
 
-    function connect() {
-        if (socket.value.disconnected) socket.value.connect()
+  // cache user data to reduce querying from db
+  const users = ref([] as Array<User>)
+
+
+  async function joinRoom(id: string) {
+    try {
+      const { data: existingRoom } = await supabase
+        .from('rooms')
+        .select('*')
+        .eq('id', id)
+
+
+      if (existingRoom && existingRoom.length === 0) {
+        const { error } = await supabase
+          .from('rooms')
+          .insert([{ id }])
+        if (error) throw error
+      }
+
+      roomId.value = id
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id, content, created_at, sender_id,  users (id, email, avatar)')
+        .eq('room_id', id)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      // TODO: fix inferred type by supabase is wrong
+      // @ts-ignore
+      messages.value = data
+      console.debug({ msg: messages.value })
+
+      supabase
+        .channel('any')
+        .on('postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: 'room_id=eq.' + id,
+          },
+          handleNewMessages)
+        .subscribe()
+    } catch (e) {
+      if (e instanceof Error) alert(e.message)
     }
+  }
 
-    function disconnect() {
-        socket.value.disconnect()
+  async function handleNewMessages(payload: any) {
+    const existingUser = users.value.find(user => user.id === payload.new.sender_id)
+    if (!existingUser) {
+      console.debug('Fetching new user')
+      const { data: user } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', payload.new.sender_id)
+        .single()
+      const message: ChatMessage = { ...payload.new, users: user }
+      messages.value.push(message)
+      users.value.push(user)
+    } else {
+      console.debug('Using cached user')
+      const message: ChatMessage = { ...payload.new, users: existingUser }
+      messages.value.push(message)
     }
+  }
 
-    function sendMessage(msg: string) {
-        socket.value.emit('message', msg)
-    }
 
-    function join(username: string, avatar: string, uuid: string, roomId: string) {
-        messages.value = []
-        const user: User = {
-            avatar,
-            uuid,
-            username,
-            socketId: socket.value.id
-        }
-        users.value = [user]
-        socket.value.emit('join', {user, roomId} as JoinRoomProps)
-    }
+  async function sendMessage(content: string) {
+    if (!user.value) throw new Error('Not logged in')
 
-    function leave() {
-        socket.value.emit('leave')
-    }
+    console.debug('Sending message', content)
+    const sender_id = user.value.id;
+    const room_id = roomId.value;
+    await supabase
+      .from('messages')
+      .insert([{ room_id, sender_id, content }])
+  }
 
-    socket.value.on("connect", () => {
-    });
-
-    socket.value.on("message", (msg: ChatMessage) => {
-        messages.value.push(msg)
-    });
-
-    socket.value.on("joined", (props: JoinedProps) => {
-        messages.value = props.messages
-        users.value = props.users
-    });
-
-    socket.value.on("userJoined", (user: User) => {
-        console.log('userJoined', user)
-        users.value.push(user)
-    });
-
-    socket.value.on("userLeft", (uuid: string) => {
-        users.value = users.value.filter(user => user.uuid != uuid)
-    });
-
-    socket.value.on("disconnect", () => {
-    });
-
-    return {
-        socket,
-        connected,
-        connect,
-        disconnect,
-        sendMessage,
-        join,
-        leave,
-        messages,
-        users
-    }
+  return {
+    messages,
+    joinRoom,
+    sendMessage
+  }
 })

@@ -6,16 +6,13 @@
 </template>
 
 <script lang="ts" setup>
-import {useChatStore} from "@/stores/chat";
-import {computed, ref} from "vue";
-import {storeToRefs} from "pinia";
+import { ref } from "vue";
+import { useChatStore } from "@/stores/chat";
 
 const chatStore = useChatStore()
 const {sendMessage} = chatStore
-const {socket} = storeToRefs(chatStore)
 
 const message = ref('')
-const username = computed(() => window.localStorage.getItem('username') ?? '🤡')
 
 function send() {
   const msg = message.value.trim();

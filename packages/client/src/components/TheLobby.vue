@@ -13,7 +13,7 @@
             <span class="p-inputgroup-addon">
                 <i class="pi pi-user"></i>
             </span>
-          <InputText v-model="username" placeholder="Username" @keyup.enter="join()"/>
+          <InputText v-model="email" placeholder="Username" readonly/>
         </div>
         <div class="p-inputgroup flex-1">
             <span class="p-inputgroup-addon">
@@ -29,43 +29,31 @@
 </template>
 
 <script lang="ts" setup>
-import {useChatStore} from "@/stores/chat";
-import {computed, ref} from "vue";
-import {storeToRefs} from "pinia";
-import {useRoute, useRouter} from "vue-router";
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 import getRandomAnimalEmoji from "@/utils/getRandomAnimalEmoji";
-import {v4 as uuidv4} from 'uuid';
+import { useSupabaseStore } from "@/stores/supabase";
 
 const router = useRouter()
 const route = useRoute()
+const supabaseStore = useSupabaseStore()
 
-const chatStore = useChatStore()
-const {connect} = chatStore
-const {connected} = storeToRefs(chatStore)
+const { session, changeAvatar } = supabaseStore
+const { user } = storeToRefs(supabaseStore)
 
-const username = ref(window.localStorage.getItem('username') ?? '')
-const roomId = ref(route.params.roomId as string ?? window.localStorage.getItem('roomId') ?? '')
-const avatar = ref(window.localStorage.getItem('avatar') ?? getRandomAnimalEmoji())
-const uuid = ref(window.localStorage.getItem('uuid') ?? uuidv4())
+const roomId = ref(route.params.roomId as string ?? '')
 
-const canJoin = computed(() => username.value !== "" && roomId.value !== "" && connected.value)
+const canJoin = computed(() => roomId.value !== "")
+const email = computed(() => session?.user?.email ?? '')
+const avatar = computed(() => user.value?.avatar ?? getRandomAnimalEmoji())
 
 function randomizeAvatar() {
-  avatar.value = getRandomAnimalEmoji()
+  changeAvatar(getRandomAnimalEmoji())
 }
 
 function join() {
-  if (!canJoin.value) return
-  window.localStorage.setItem('username', username.value)
-  window.localStorage.setItem('roomId', roomId.value)
-  window.localStorage.setItem('avatar', avatar.value)
-  window.localStorage.setItem('uuid', uuid.value)
-  router.push({
-    name: 'room',
-    params: {
-      roomId: roomId.value
-    }
-  })
+  if (canJoin.value) router.push({ name: 'room', params: { roomId: roomId.value } })
 }
 </script>
 

@@ -1,22 +1,24 @@
 export interface ChatMessage {
-    user: User
-    content: string
-    timestamp: number
+  content: string;
+  created_at: string;
+  id: number;
+  room_id: string;
+  sender_id: number;
+  users: User
 }
 
 export interface JoinRoomProps {
-    roomId: string,
-    user: User
-} 
+  roomId: string,
+  user: User
+}
 
 export interface User {
-    uuid: string,
-    socketId: string,
-    username: string,
-    avatar: string,
+  id: string;
+  email: string;
+  avatar: string;
 }
 
 export interface JoinedProps {
-    messages: Array<ChatMessage>;
-    users: User[];
+  messages: Array<ChatMessage>;
+  users: User[];
 }

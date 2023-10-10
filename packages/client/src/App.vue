@@ -5,14 +5,5 @@
 </template>
 
 <script lang="ts" setup>
-import {RouterView} from 'vue-router'
-import {useChatStore} from "@/stores/chat";
-import {onMounted} from "vue";
-
-const chatStore = useChatStore()
-const {connect} = chatStore
-
-onMounted(() => {
-  connect()
-})
+import { RouterView } from 'vue-router'
 </script>
