@@ -17,7 +17,8 @@ export const useSupabaseStore = defineStore('supabase', () => {
       if (loading.value) return
       loading.value = true
       try {
-        const { error } = await supabase.auth.signInWithOtp({ email, })
+        const emailRedirectTo = window.location.origin
+        const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } })
         if (error) throw error
         alert('Check your email for the login link!')
       } catch (e) {
