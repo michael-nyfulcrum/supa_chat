@@ -42,7 +42,7 @@ const supabaseStore = useSupabaseStore()
 const { session, changeAvatar } = supabaseStore
 const { user } = storeToRefs(supabaseStore)
 
-const roomId = ref(route.params.roomId as string ?? '')
+const roomId = ref(route.params.roomId as string ?? 'fulcrum')
 
 const canJoin = computed(() => roomId.value !== "")
 const email = computed(() => session?.user?.email ?? '')
